@@ -3,6 +3,7 @@ mysql = require('mysql2');
 const inquirer = require('inquirer');
 const ct = require('console.table');
 const PORT = process.env.PORT || 3005;
+const util = require('util');
 
 const db = mysql.createConnection(
     {
@@ -15,6 +16,8 @@ const db = mysql.createConnection(
     },
     //console.log(`worked.`)
   );
+
+  db.query = util.promisify(db.query);
 
   db.connect(function (err) {
     if (err) throw err;
@@ -122,6 +125,140 @@ const viewRole = async () => {
             console.table(roleArray);
             initialize();
         });
+    } catch (err) {
+        console.log(err);
+        initialize();
+    };
+}
+
+
+const addEmp = async () => {
+    try {
+        console.log('ADD EMPLOYEE');
+        const roles = await db.query("SELECT * FROM role");
+        const managers = await db.query("SELECT * FROM employee");
+
+        const answer = await inquirer.prompt([
+            {
+                name: 'firstName',
+                type: 'input',
+                message: 'What is the first name of this Employee?'
+            },
+            {
+                name: 'lastName',
+                type: 'input',
+                message: 'What is the last name of this Employee?'
+            },
+            {
+                name: 'employeeRole',
+                type: 'list',
+                choices: roles.map((role) => {
+                    return {
+                        name: role.title,
+                        value: role.id
+                    }
+                }),
+                message: "What is this Employee's role?"
+            },
+            {
+                name: 'employeeManager',
+                type: 'list',
+                choices: managers.map((manager) => {
+                    return {
+                        name: manager.first_name + " " + manager.last_name,
+                        value: manager.id
+                    }
+                }),
+                message: "What is the name of Employee's Manager?"
+            }
+        ])
+
+        const result = await db.query("INSERT INTO employee SET ?", {
+            first_name: answer.firstName,
+            last_name: answer.lastName,
+            role: (answer.employeeRole),
+            manager: (answer.employeeManager)
+        });
+
+        console.log(`${answer.firstName} ${answer.lastName} added successfully.\n`);
+        initialize();
+
+    } catch (err) {
+        console.log(err);
+        initialize();
+    };
+}
+
+const addDep = async () => {
+    try {
+        console.log('ADD DEPARTMENT');
+
+        const answer = await inquirer.prompt([
+            {
+                name: 'depName',
+                type: 'input',
+                message: 'What is the name of your new department?'
+            }
+        ]);
+
+        const result = await db.query("INSERT INTO department SET ?", {
+            department_name: answer.depName
+        });
+
+        console.log(`${answer.depName} added successfully to departments.\n`)
+        initialize();
+
+    } catch (err) {
+        console.log(err);
+        initialize();
+    };
+}
+
+const addRole = async () => {
+    try {
+        console.log('ADD ROLE');
+
+        const departments = await db.query("SELECT * FROM department")
+
+        const answer = await inquirer.prompt([
+            {
+                name: 'title',
+                type: 'input',
+                message: 'What is the new role?'
+            },
+            {
+                name: 'salary',
+                type: 'input',
+                message: 'How much salary will this role provide?'
+            },
+            {
+                name: 'department',
+                type: 'list',
+                choices: departments.map((department) => {
+                    return {
+                        name: department.department_name,
+                        value: department.id
+                    }
+                }),
+                message: 'What department is this role associated with?',
+            }
+        ]);
+
+        let chosenDep;
+        for (i = 0; i < departments.length; i++) {
+            if(departments[i].department === answer.choice) {
+                chosenDep = departments[i];
+            };
+        }
+        const result = await db.query("INSERT INTO role SET ?", {
+            title: answer.title,
+            salary: answer.salary,
+            department: answer.department
+        })
+
+        console.log(`${answer.title} role added successfully.\n`)
+        initialize();
+
     } catch (err) {
         console.log(err);
         initialize();
