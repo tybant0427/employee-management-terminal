@@ -1,0 +1,23 @@
+{
+  "name": "employee-management-terminal",
+  "version": "1.0.0",
+  "description": "An application to track and manage an employee database.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tybant0427/employee-management-terminal.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tybant0427/employee-management-terminal/issues"
+  },
+  "homepage": "https://github.com/tybant0427/employee-management-terminal#readme",
+  "dependencies": {
+    "inquirer": "^8.2.0"
+  }
+}
