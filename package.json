@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/tybant0427/employee-management-terminal#readme",
   "dependencies": {
-    "inquirer": "^8.2.0"
+    "console.table": "^0.10.0",
+    "inquirer": "^8.2.0",
+    "mysql": "^2.18.1"
   }
 }
