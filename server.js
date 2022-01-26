@@ -77,3 +77,54 @@ const initialize = async () => {
     };
 }
 
+const viewEmp = async () => {
+    console.log('EMPLOYEES');
+    try {
+        const query = 'SELECT * FROM employee';
+        db.query(query, function (err, res) {
+            if (err) throw err;
+            const empArray = [];
+            res.forEach(employee => empArray.push(employee));
+            console.table(empArray);
+            initialize();
+        });
+    } catch (err) {
+        console.log(err);
+        initialize();
+    };
+}
+
+const viewDep = async () => {
+    console.log('DEPARTMENTS');
+    try {
+        const query = 'SELECT * FROM department';
+        db.query(query, function (err, res) {
+            if (err) throw err;
+            const depArray = [];
+            res.forEach(department => depArray.push(department));
+            console.table(depArray);
+            initialize();
+        });
+    } catch (err) {
+        console.log(err);
+        initialize();
+    };
+}
+
+const viewRole = async () => {
+    console.log('ROLES');
+    try {
+        const query = 'SELECT * FROM role';
+        db.query(query, function (err, res) {
+            if (err) throw err;
+            const roleArray = [];
+            res.forEach(role => roleArray.push(role));
+            console.table(roleArray);
+            initialize();
+        });
+    } catch (err) {
+        console.log(err);
+        initialize();
+    };
+}
+
