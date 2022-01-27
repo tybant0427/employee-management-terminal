@@ -1,20 +1,17 @@
-// const mysql = require('mysql');
+//dependencies
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const ct = require('console.table');
 const PORT = process.env.PORT || 3306;
 const util = require('util');
-
+//connect to database
 const db = mysql.createConnection(
     {
       host: 'localhost',
-      
       user: 'root',
-    
       password: 'root',
       database: 'employees'
     },
-    //console.log(`worked.`)
   );
 
   db.query = util.promisify(db.query);
@@ -23,13 +20,13 @@ const db = mysql.createConnection(
     if (err) throw err;
     initialize();
 })
-
+//initialize and start the program 
 const initialize = async () => {
-    try {
+    try { 
         let answer = await inquirer.prompt({
             name: 'action',
             type: 'list',
-            message: 'What would you like to do?',
+            message: 'What would you like to do?', //initial prompt
             choices: [
                 'View Employees',
                 'View Departments',
@@ -76,19 +73,20 @@ const initialize = async () => {
         };
     } catch (err) {
         console.log(err);
-        initialize();
+        initialize(); //return to main menu
     };
 }
-
+//view the employee table 
 const viewEmp = async () => {
     console.log('EMPLOYEES');
+    //pull from database
     try {
         const query = 'SELECT * FROM employee';
         db.query(query, function (err, res) {
             if (err) throw err;
             const empArray = [];
             res.forEach(employee => empArray.push(employee));
-            console.table(empArray);
+            console.table(empArray);//display
             initialize();
         });
     } catch (err) {
@@ -96,16 +94,17 @@ const viewEmp = async () => {
         initialize();
     };
 }
-
+//view the departments table
 const viewDep = async () => {
     console.log('DEPARTMENTS');
+    //pull from database
     try {
         const query = 'SELECT * FROM department';
         db.query(query, function (err, res) {
             if (err) throw err;
             const depArray = [];
             res.forEach(department => depArray.push(department));
-            console.table(depArray);
+            console.table(depArray);//display
             initialize();
         });
     } catch (err) {
@@ -113,16 +112,17 @@ const viewDep = async () => {
         initialize();
     };
 }
-
+//view the roles table
 const viewRole = async () => {
     console.log('ROLES');
+    //pull from database
     try {
         const query = 'SELECT * FROM role';
         db.query(query, function (err, res) {
             if (err) throw err;
             const roleArray = [];
             res.forEach(role => roleArray.push(role));
-            console.table(roleArray);
+            console.table(roleArray);//display
             initialize();
         });
     } catch (err) {
@@ -130,14 +130,14 @@ const viewRole = async () => {
         initialize();
     };
 }
-
+//function to add employees to the database
 const addEmp = async () => {
     try {
         console.log('ADD EMPLOYEE');
         const roles = await db.query("SELECT * FROM role");
         const managers = await db.query("SELECT * FROM employee");
 
-        const answer = await inquirer.prompt([
+        const answer = await inquirer.prompt([ //questions for user
             {
                 name: 'firstName',
                 type: 'input',
@@ -149,7 +149,7 @@ const addEmp = async () => {
                 message: 'What is the last name of this Employee?'
             },
             {
-                name: 'empRoleId',
+                name: 'empRoleId', //defining employees role
                 type: 'list',
                 choices: roles.map((role) => {
                     return {
@@ -160,7 +160,7 @@ const addEmp = async () => {
                 message: "What is this Employee's role?"
             },
             {
-                name: 'empManId',
+                name: 'empManId', //defining the employee's manager
                 type: 'list',
                 choices: managers.map((manager) => {
                     return {
@@ -171,7 +171,7 @@ const addEmp = async () => {
                 message: "What is the name of Employee's Manager?"
             }
         ])
-
+        //push new employee to database
         const result = await db.query("INSERT INTO employee SET ?", {
             first_name: answer.firstName,
             last_name: answer.lastName,
@@ -187,19 +187,19 @@ const addEmp = async () => {
         initialize();
     };
 }
-
+//function to add a new department
 const addDep = async () => {
     try {
         console.log('ADD DEPARTMENT');
 
-        const answer = await inquirer.prompt([
+        const answer = await inquirer.prompt([ //questions for user
             {
                 name: 'depName',
                 type: 'input',
                 message: 'What is the name of your new department?'
             }
         ]);
-
+        //pushing new department to database
         const result = await db.query("INSERT INTO department SET ?", {
             department_name: answer.depName
         });
@@ -212,13 +212,13 @@ const addDep = async () => {
         initialize();
     };
 }
-
+//function to add a new role to a department
 const addRole = async () => {
     try {
         console.log('ADD ROLE');
         const depts = await db.query("SELECT * FROM department")
 
-        const answer = await inquirer.prompt([
+        const answer = await inquirer.prompt([ //questions for user
             {
                 name: 'title',
                 type: 'input',
@@ -230,7 +230,7 @@ const addRole = async () => {
                 message: 'How much salary will this role provide?'
             },
             {
-                name: 'depId',
+                name: 'depId', // defining which department the role belongs to
                 type: 'list',
                 choices: depts.map((depId) => {
                     return {
@@ -241,13 +241,14 @@ const addRole = async () => {
                 message: 'What department is this role associated with?',
             }
         ]);
-
+       
         let chosenDep;
         for (i = 0; i < depts.length; i++) {
             if(depts[i].department_id === answer.choice) {
                 chosenDep = depts[i];
             };
         }
+         //pushing new info to database
         const result = await db.query("INSERT INTO role SET ?", {
             title: answer.title,
             salary: answer.salary,
@@ -262,16 +263,16 @@ const addRole = async () => {
         initialize();
     };
 }
-
+//function to update employee's info in the system
 const updateEmp = async () => {
     try {
         console.log('UPDATE');
         const employees = await db.query("SELECT * FROM employee");
-        const empSelect = await inquirer.prompt([
+        const empSelect = await inquirer.prompt([ //selections for user
             {
                 name: 'employee',
                 type: 'list',
-                choices: employees.map((empName) => {
+                choices: employees.map((empName) => { //employee selection
                     return {
                         name: empName.first_name + " " + empName.last_name,
                         value: empName.id
@@ -286,7 +287,7 @@ const updateEmp = async () => {
             {
                 name: 'role',
                 type: 'list',
-                choices: roles.map((roleName) => {
+                choices: roles.map((roleName) => { //new role for employee selection
                     return {
                         name: roleName.title,
                         value: roleName.id
