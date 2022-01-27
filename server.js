@@ -1,5 +1,5 @@
 // const mysql = require('mysql');
-mysql = require('mysql2');
+const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const ct = require('console.table');
 const PORT = process.env.PORT || 3306;
@@ -255,6 +255,49 @@ const addRole = async () => {
         })
 
         console.log(`${answer.title} role added successfully.\n`)
+        initialize();
+
+    } catch (err) {
+        console.log(err);
+        initialize();
+    };
+}
+
+const updateEmp = async () => {
+    try {
+        console.log('UPDATE');
+        const employees = await db.query("SELECT * FROM employee");
+        const empSelect = await inquirer.prompt([
+            {
+                name: 'employee',
+                type: 'list',
+                choices: employees.map((empName) => {
+                    return {
+                        name: empName.first_name + " " + empName.last_name,
+                        value: empName.id
+                    }
+                }),
+                message: 'Please choose employee to update.'
+            }
+        ]);
+
+        const roles = await db.query("SELECT * FROM role");
+        const roleSelect = await inquirer.prompt([
+            {
+                name: 'role',
+                type: 'list',
+                choices: roles.map((roleName) => {
+                    return {
+                        name: roleName.title,
+                        value: roleName.id
+                    }
+                }),
+                message: 'Please select the role to update the employee with.'
+            }
+        ]);
+
+        const result = await db.query("UPDATE employee SET ? WHERE ?", [{ role_id: roleSelect.role }, { id: empSelect.employee }]);
+        console.log(`Successfully updated.\n`);
         initialize();
 
     } catch (err) {
