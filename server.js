@@ -2,7 +2,7 @@
 mysql = require('mysql2');
 const inquirer = require('inquirer');
 const ct = require('console.table');
-const PORT = process.env.PORT || 3005;
+const PORT = process.env.PORT || 3306;
 const util = require('util');
 
 const db = mysql.createConnection(
@@ -131,7 +131,6 @@ const viewRole = async () => {
     };
 }
 
-
 const addEmp = async () => {
     try {
         console.log('ADD EMPLOYEE');
@@ -150,7 +149,7 @@ const addEmp = async () => {
                 message: 'What is the last name of this Employee?'
             },
             {
-                name: 'employeeRole',
+                name: 'empRoleId',
                 type: 'list',
                 choices: roles.map((role) => {
                     return {
@@ -161,7 +160,7 @@ const addEmp = async () => {
                 message: "What is this Employee's role?"
             },
             {
-                name: 'employeeManager',
+                name: 'empManId',
                 type: 'list',
                 choices: managers.map((manager) => {
                     return {
@@ -176,8 +175,8 @@ const addEmp = async () => {
         const result = await db.query("INSERT INTO employee SET ?", {
             first_name: answer.firstName,
             last_name: answer.lastName,
-            role: (answer.employeeRole),
-            manager: (answer.employeeManager)
+            role_id: (answer.empRoleId),
+            manager_id: (answer.empManId)
         });
 
         console.log(`${answer.firstName} ${answer.lastName} added successfully.\n`);
@@ -217,8 +216,7 @@ const addDep = async () => {
 const addRole = async () => {
     try {
         console.log('ADD ROLE');
-
-        const departments = await db.query("SELECT * FROM department")
+        const depts = await db.query("SELECT * FROM department")
 
         const answer = await inquirer.prompt([
             {
@@ -232,12 +230,12 @@ const addRole = async () => {
                 message: 'How much salary will this role provide?'
             },
             {
-                name: 'department',
+                name: 'depId',
                 type: 'list',
-                choices: departments.map((department) => {
+                choices: depts.map((depId) => {
                     return {
-                        name: department.department_name,
-                        value: department.id
+                        name: depId.department_name,
+                        value: depId.id
                     }
                 }),
                 message: 'What department is this role associated with?',
@@ -245,15 +243,15 @@ const addRole = async () => {
         ]);
 
         let chosenDep;
-        for (i = 0; i < departments.length; i++) {
-            if(departments[i].department === answer.choice) {
-                chosenDep = departments[i];
+        for (i = 0; i < depts.length; i++) {
+            if(depts[i].department_id === answer.choice) {
+                chosenDep = depts[i];
             };
         }
         const result = await db.query("INSERT INTO role SET ?", {
             title: answer.title,
             salary: answer.salary,
-            department: answer.department
+            department_id: answer.department
         })
 
         console.log(`${answer.title} role added successfully.\n`)
@@ -264,4 +262,6 @@ const addRole = async () => {
         initialize();
     };
 }
+
+
 
